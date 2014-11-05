@@ -4,6 +4,7 @@ Helper functions used in views.
 """
 
 import csv
+import logging
 from json import dumps
 from functools import wraps
 from datetime import datetime
@@ -12,7 +13,7 @@ from flask import Response
 
 from presence_analyzer.main import app
 
-import logging
+
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 

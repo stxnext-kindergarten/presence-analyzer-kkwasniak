@@ -9,7 +9,6 @@ import unittest
 
 from presence_analyzer import main, views, utils
 
-
 TEST_DATA_CSV = os.path.join(
     os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_data.csv'
 )
@@ -53,6 +52,31 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(len(data), 2)
         self.assertDictEqual(data[0], {u'user_id': 10, u'name': u'User 10'})
 
+    def test_api_mean_time_weekday_view(self):
+        """
+        Test mean time weekday.
+        """
+        resp = self.client.get('/api/v1/mean_time_weekday/10')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+        data = json.loads(resp.data)
+        self.assertEqual(len(data), 7)
+        self.assertListEqual(data[:2], [[u'Mon', 0], [u'Tue', 30047.0]])
+
+    def test_api_presence_weekday_view(self):
+        """
+        Test presence_weekday_view.
+        """
+        resp = self.client.get('/api/v1/presence_weekday/11')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+        data = json.loads(resp.data)
+        self.assertEqual(len(data), 8)
+        self.assertListEqual(
+            data[:2],
+            [[u'Weekday', u'Presence (s)'], [u'Mon', 24123]]
+        )
+
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
     """
@@ -84,6 +108,68 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         self.assertEqual(
             data[10][sample_date]['start'],
             datetime.time(9, 39, 5)
+        )
+
+    def test_group_by_weekday(self):
+        """
+        Test groups presence entries by weekday.
+        """
+        data = {
+            datetime.date(2012, 7, 5):
+                {
+                    'start': datetime.time(9, 8, 37),
+                    'end': datetime.time(18, 17, 4)
+                }
+        }
+        tmp = utils.group_by_weekday(data)
+        self.assertIsInstance(tmp, list)
+        self.assertEqual(tmp, [[], [], [], [32907], [], [], []])
+
+        data[datetime.date(2012, 6, 27)] = {
+            'start': datetime.time(8, 31, 6),
+            'end': datetime.time(15, 15, 27)
+        }
+        tmp = utils.group_by_weekday(data)
+        self.assertEqual(tmp, [[], [], [24261], [32907], [], [], []])
+
+        data[datetime.date(2012, 12, 12)] = {
+            'start': datetime.time(12, 12, 12),
+            'end': datetime.time(12, 12, 13)
+        }
+        tmp = utils.group_by_weekday(data)
+        self.assertEqual(tmp, [[], [], [24261, 1], [32907], [], [], []])
+
+    def test_seconds_since_midnight(self):
+        """
+        Test calculates amount of seconds since midnight.
+        """
+        sample_date = datetime.datetime(2014, 11, 4, 15, 28, 28, 864311)
+        self.assertEqual(utils.seconds_since_midnight(sample_date), 55708)
+
+        sample_date = datetime.datetime(2014, 11, 1, 0, 0, 2, 0)
+        self.assertEqual(utils.seconds_since_midnight(sample_date), 2)
+
+    def test_interval(self):
+        """
+        Test calculates inverval in seconds between two datetime.time objects.
+        """
+        start_date = datetime.datetime(2014, 11, 4, 15, 28, 28, 864311)
+        end_date = datetime.datetime(2014, 11, 4, 15, 33, 47, 872419)
+        self.assertEqual(utils.interval(start_date, end_date), 319)
+
+        start_date = datetime.datetime(2014, 11, 5, 10, 25, 27, 10916)
+        end_date = datetime.datetime(2014, 12, 7, 12, 59, 22, 164251)
+        self.assertEqual(utils.interval(start_date, end_date), 9235)
+
+    def test_mean(self):
+        """
+        Test calculates arithmetic mean. Returns zero for empty lists.
+        """
+        self.assertEqual(utils.mean([30927, 25197, 29931]), 28685.0)
+        self.assertEqual(utils.mean([0]), 0.0)
+        self.assertEqual(utils.mean([1337, .1337]), 668.56685)
+        self.assertEqual(
+            utils.mean([911.997, 14536.456456, 123123.5678]), 46190.673752
         )
 
 

@@ -65,7 +65,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
 
     def test_api_presence_weekday_view(self):
         """
-        Test presence_weekday_view.
+        Test presence weekday view.
         """
         resp = self.client.get('/api/v1/presence_weekday/11')
         self.assertEqual(resp.status_code, 200)
@@ -73,8 +73,39 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         data = json.loads(resp.data)
         self.assertEqual(len(data), 8)
         self.assertListEqual(
-            data[:2],
-            [[u'Weekday', u'Presence (s)'], [u'Mon', 24123]]
+            data,
+            [
+                [u'Weekday', u'Presence (s)'],
+                [u'Mon', 24123],
+                [u'Tue', 16564],
+                [u'Wed', 25321],
+                [u'Thu', 45968],
+                [u'Fri', 6426],
+                [u'Sat', 0],
+                [u'Sun', 0]
+            ]
+        )
+
+    def test_api_presence_start_end_view(self):
+        """
+        Test presence start end view.
+        """
+        resp = self.client.get('/api/v1/presence_start_end/10')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+        data = json.loads(resp.data)
+        self.assertEqual(len(data), 7)
+        self.assertListEqual(
+            data,
+            [
+                [u'Mon', [0, 0, 0], [0, 0, 0]],
+                [u'Tue', [9, 39, 5], [17, 59, 52]],
+                [u'Wed', [9, 19, 52], [16, 7, 37]],
+                [u'Thu', [10, 48, 46], [17, 23, 51]],
+                [u'Fri', [0, 0, 0], [0, 0, 0]],
+                [u'Sat', [0, 0, 0], [0, 0, 0]],
+                [u'Sun', [0, 0, 0], [0, 0, 0]]
+            ]
         )
 
 
@@ -171,6 +202,13 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         self.assertEqual(
             utils.mean([911.997, 14536.456456, 123123.5678]), 46190.673752
         )
+
+    def test_seconds_to_hour(self):
+        """
+        Test converting from seconds to hour.
+        """
+        self.assertEqual(utils.seconds_to_hour(30927), (8, 35, 27))
+        self.assertEqual(utils.seconds_to_hour(0), (0, 0, 0))
 
 
 def suite():

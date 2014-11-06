@@ -7,7 +7,7 @@ import csv
 import logging
 from json import dumps
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Response
 
@@ -103,3 +103,11 @@ def mean(items):
     Calculates arithmetic mean. Returns zero for empty lists.
     """
     return float(sum(items)) / len(items) if len(items) > 0 else 0
+
+
+def seconds_to_hour(seconds):
+    """
+    Convert seconds to tuple (hour, minutes, seconds).
+    """
+    date = datetime(1, 1, 1) + timedelta(seconds=seconds)
+    return date.timetuple()[3:6]

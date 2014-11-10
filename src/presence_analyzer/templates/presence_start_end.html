@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+    Presence start-end weekday
+{% endblock %}
+
+{% block script_area %}
+    <script type="text/javascript">
+        get_users(
+            "{{ url_for('api_users_view') }}",
+            function (loading, chart_div, selected_user) {
+                var result = [],
+                    url = "{{ url_for('api_presence_start_end', user_id=1)[:-2] }}/" + selected_user;
+                $.getJSON(url, function(entries) {
+                    entries.forEach(function(entry) {
+                        result.push(
+                            [
+                                entry[0],
+                                new Date(1, 1, 1, entry[1][0], entry[1][1], entry[1][2]),
+                                new Date(1, 1, 1, entry[2][0], entry[2][1], entry[2][2])
+                            ]
+                        )
+                    });
+                    var data = google.visualization.arrayToDataTable(result),
+                        options = {};
+
+                    chart_div.show();
+                    loading.hide();
+                    var chart = new google.visualization.PieChart(chart_div[0]);
+                    chart.draw(data, options);
+                    var data = new google.visualization.DataTable();
+                    data.addColumn('string', 'Weekday');
+                    data.addColumn({ type: 'datetime', id: 'Start' });
+                    data.addColumn({ type: 'datetime', id: 'End' });
+                    data.addRows(result);
+                    var options = {
+                        hAxis: {title: 'Weekday'}
+                    };
+                    var formatter = new google.visualization.DateFormat({pattern: 'HH:mm:ss'});
+                    formatter.format(data, 1);
+                    formatter.format(data, 2);
+
+                    chart_div.show();
+                    loading.hide();
+                    var chart = new google.visualization.Timeline(chart_div[0]);
+                    chart.draw(data, options);
+                });
+            }
+        )
+    </script>
+{% endblock %}

@@ -5,7 +5,8 @@ Defines views.
 import logging
 import calendar
 
-from flask import redirect, abort
+from flask import redirect, abort, render_template, url_for
+from jinja2 import TemplateNotFound
 
 from presence_analyzer.main import app
 from presence_analyzer.utils import (
@@ -26,12 +27,14 @@ def mainpage():
     """
     Redirects to front page.
     """
-    return redirect('/static/presence_weekday.html')
+    return redirect(
+        url_for('template_param', template='presence_weekday.html')
+    )
 
 
 @app.route('/api/v1/users', methods=['GET'])
 @jsonify
-def users_view():
+def api_users_view():
     """
     Users listing for dropdown.
     """
@@ -44,16 +47,16 @@ def users_view():
 
 @app.route('/api/v1/mean_time_weekday/<int:user_id>', methods=['GET'])
 @jsonify
-def mean_time_weekday_view(user_id):
+def api_mean_time_weekday(user_id):
     """
     Returns mean presence time of given user grouped by weekday.
     """
-    data = get_data()
-    if user_id not in data:
+    data = get_data().get(user_id)
+    if data is None:
         log.debug('User %s not found!', user_id)
         abort(404)
 
-    weekdays = group_by_weekday(data[user_id])
+    weekdays = group_by_weekday(data)
     result = [
         (calendar.day_abbr[weekday], mean(intervals))
         for weekday, intervals in enumerate(weekdays)
@@ -64,16 +67,16 @@ def mean_time_weekday_view(user_id):
 
 @app.route('/api/v1/presence_weekday/<int:user_id>', methods=['GET'])
 @jsonify
-def presence_weekday_view(user_id):
+def api_presence_weekday(user_id):
     """
     Returns total presence time of given user grouped by weekday.
     """
-    data = get_data()
-    if user_id not in data:
+    data = get_data().get(user_id)
+    if data is None:
         log.debug('User %s not found!', user_id)
         abort(404)
 
-    weekdays = group_by_weekday(data[user_id])
+    weekdays = group_by_weekday(data)
     result = [
         (calendar.day_abbr[weekday], sum(intervals))
         for weekday, intervals in enumerate(weekdays)
@@ -85,11 +88,11 @@ def presence_weekday_view(user_id):
 
 @app.route('/api/v1/presence_start_end/<int:user_id>', methods=['GET'])
 @jsonify
-def presence_start_end_view(user_id):
+def api_presence_start_end(user_id):
     """
     Returns avg start and end time of the user.
     """
-    data = get_data().get(user_id, None)
+    data = get_data().get(user_id)
     if user_id is None:
         log.debug('User %s not found!', user_id)
         abort(404)
@@ -114,3 +117,14 @@ def presence_start_end_view(user_id):
     ]
 
     return result
+
+
+@app.route('/<template>')
+def template_param(template):
+    """
+    Function that render template if exists. If not then abort with 404.
+    """
+    try:
+        return render_template(template)
+    except TemplateNotFound:
+        abort(404)

@@ -108,6 +108,13 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             ]
         )
 
+    def test_not_existing_template(self):
+        """
+        Test for not existing template/url.
+        """
+        resp = self.client.get('/end_of_internet')
+        self.assertEqual(resp.status_code, 404)
+
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
     """

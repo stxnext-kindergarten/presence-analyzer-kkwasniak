@@ -7,6 +7,7 @@ import json
 import datetime
 import unittest
 
+# pylint: disable=unused-import, import-error
 from presence_analyzer import main, views, utils
 
 TEST_DATA_CSV = os.path.join(
@@ -52,7 +53,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(len(data), 2)
         self.assertDictEqual(data[0], {u'user_id': 10, u'name': u'User 10'})
 
-    def test_api_mean_time_weekday_view(self):
+    def test_api_mean_time_weekday(self):
         """
         Test mean time weekday.
         """
@@ -63,7 +64,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(len(data), 7)
         self.assertListEqual(data[:2], [[u'Mon', 0], [u'Tue', 30047.0]])
 
-    def test_api_presence_weekday_view(self):
+    def test_api_presence_weekday(self):
         """
         Test presence weekday view.
         """
@@ -86,7 +87,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             ]
         )
 
-    def test_api_presence_start_end_view(self):
+    def test_api_presence_start_end(self):
         """
         Test presence start end view.
         """

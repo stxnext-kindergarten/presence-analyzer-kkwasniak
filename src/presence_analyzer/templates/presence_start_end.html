@@ -1,16 +1,16 @@
-{% extends "base.html" %}
+<%inherit file="base.html"/>
 
-{% block content %}
+<%block name="content">
     Presence start-end weekday
-{% endblock %}
+</%block>
 
-{% block script_area %}
+<%block name="script_area">
     <script type="text/javascript">
         get_users(
-            "{{ url_for('api_users_view') }}",
+            "${ url_for('api_users_view') }",
             function (loading, chart_div, selected_user) {
                 var result = [],
-                    url = "{{ url_for('api_presence_start_end', user_id=1)[:-2] }}/" + selected_user;
+                    url = "${ url_for('api_presence_start_end', user_id=1)[:-2] }/" + selected_user;
                 $.getJSON(url, function(entries) {
                     entries.forEach(function(entry) {
                         result.push(
@@ -48,4 +48,4 @@
             }
         )
     </script>
-{% endblock %}
+</%block>

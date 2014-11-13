@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 
 from flask import Response
 
+# pylint: disable=import-error
 from presence_analyzer.main import app
 
 

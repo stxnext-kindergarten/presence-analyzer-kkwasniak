@@ -5,8 +5,10 @@ Defines views.
 import logging
 import calendar
 
-from flask import redirect, abort, render_template, url_for
-from jinja2 import TemplateNotFound
+from flask import redirect, abort, url_for
+# pylint: disable=no-name-in-module, import-error
+from flask.ext.mako import render_template
+from mako.exceptions import TopLevelLookupException
 
 from presence_analyzer.main import app
 from presence_analyzer.utils import (
@@ -126,5 +128,5 @@ def template_param(template):
     """
     try:
         return render_template(template)
-    except TemplateNotFound:
+    except TopLevelLookupException:
         abort(404)

@@ -1,10 +1,10 @@
-{% extends "base.html" %}
+<%inherit file="base.html"/>
 
-{% block content %}
+<%block name="content">
     Presence mean time by weekday
-{% endblock %}
+</%block>
 
-{% block script_area %}
+<%block name="script_area">
     <script type="text/javascript">
         function parseInterval(value) {
             var result = new Date(1,1,1);
@@ -13,10 +13,10 @@
         };
 
         get_users(
-            "{{ url_for('api_users_view') }}",
+            "${ url_for('api_users_view') }",
             function (loading, chart_div, selected_user) {
                 var result = [],
-                    url = "{{ url_for('api_mean_time_weekday', user_id=1)[:-2] }}/" + selected_user;
+                    url = "${ url_for('api_mean_time_weekday', user_id=1)[:-2] }/" + selected_user;
                 $.getJSON(url, function(result) {
                     $.each(result, function(index, value) {
                         value[1] = parseInterval(value[1]);
@@ -39,4 +39,4 @@
             }
          );
     </script>
-{% endblock %}
+</%block>

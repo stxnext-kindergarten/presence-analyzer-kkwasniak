@@ -8,8 +8,10 @@ import logging
 from json import dumps
 from functools import wraps
 from datetime import datetime, timedelta
+from urlparse import urljoin
 
 from flask import Response
+from lxml import etree
 
 # pylint: disable=import-error
 from presence_analyzer.main import app
@@ -73,6 +75,25 @@ def get_data():
     return data
 
 
+def get_data_v2():
+    """
+    Return user id dict with names and links to their avatars.
+    """
+    xml = etree.parse(app.config['XML_FILE_PATH'])
+    api_server = '%s://%s' % (
+        xml.findtext('./server/protocol'), xml.findtext('./server/host')
+    )
+
+    data = {}
+    for user in xml.xpath('./users/user'):
+        data[user.get('id')] = {
+            'avatar': urljoin(api_server, user.findtext('avatar')),
+            'name': user.findtext('name')
+        }
+
+    return data
+
+
 def group_by_weekday(items):
     """
     Groups presence entries by weekday.
@@ -94,7 +115,7 @@ def seconds_since_midnight(time):
 
 def interval(start, end):
     """
-    Calculates inverval in seconds between two datetime.time objects.
+    Calculates interval in seconds between two datetime.time objects.
     """
     return seconds_since_midnight(end) - seconds_since_midnight(start)
 

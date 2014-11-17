@@ -13,7 +13,7 @@
         };
 
         get_users(
-            "${ url_for('api_users_view') }",
+            "${ url_for('api_users_v2_view') }",
             function (loading, chart_div, selected_user) {
                 var result = [],
                     url = "${ url_for('api_mean_time_weekday', user_id=1)[:-2] }/" + selected_user;
@@ -35,6 +35,9 @@
                     loading.hide();
                     var chart = new google.visualization.ColumnChart(chart_div[0]);
                     chart.draw(data, options);
+                }).error(function() {
+                    loading.hide();
+                    $('#error-text').show();
                 });
             }
          );

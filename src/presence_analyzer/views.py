@@ -14,6 +14,7 @@ from presence_analyzer.main import app
 from presence_analyzer.utils import (
     jsonify,
     get_data,
+    get_data_v2,
     mean,
     group_by_weekday,
     seconds_since_midnight,
@@ -45,6 +46,15 @@ def api_users_view():
         {'user_id': i, 'name': 'User {0}'.format(str(i))}
         for i in data.keys()
     ]
+
+
+@app.route('/api/v2/users', methods=['GET'])
+@jsonify
+def api_users_v2_view():
+    """
+    Users listing with avatars for dropdown.
+    """
+    return get_data_v2()
 
 
 @app.route('/api/v1/mean_time_weekday/<int:user_id>', methods=['GET'])
@@ -95,7 +105,7 @@ def api_presence_start_end(user_id):
     Returns avg start and end time of the user.
     """
     data = get_data().get(user_id)
-    if user_id is None:
+    if data is None:
         log.debug('User %s not found!', user_id)
         abort(404)
 

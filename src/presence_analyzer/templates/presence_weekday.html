@@ -3,7 +3,7 @@
 <%block name="script_area">
     <script type="text/javascript">
         get_users(
-            "${ url_for('api_users_view') }",
+            "${ url_for('api_users_v2_view') }",
             function (loading, chart_div, selected_user) {
                 var result = [],
                     url = "${ url_for('api_presence_weekday', user_id=1)[:-2] }/" + selected_user;
@@ -15,6 +15,9 @@
                     loading.hide();
                     var chart = new google.visualization.PieChart(chart_div[0]);
                     chart.draw(data, options);
+                }).error(function() {
+                    loading.hide();
+                    $('#error-text').show();
                 });
             }
         )

@@ -8,10 +8,14 @@ import datetime
 import unittest
 
 # pylint: disable=unused-import, import-error
-from presence_analyzer import main, views, utils
+from presence_analyzer import main, utils
 
 TEST_DATA_CSV = os.path.join(
     os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_data.csv'
+)
+
+TEST_USERS_XML = os.path.join(
+    os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_users.xml'
 )
 
 
@@ -26,6 +30,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         Before each test, set up a environment.
         """
         main.app.config.update({'DATA_CSV': TEST_DATA_CSV})
+        main.app.config.update({'XML_FILE_PATH': TEST_USERS_XML})
         self.client = main.app.test_client()
 
     def tearDown(self):
@@ -116,6 +121,55 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         resp = self.client.get('/end_of_internet')
         self.assertEqual(resp.status_code, 404)
 
+    def test_api_users_v2_view(self):
+        """
+        Test users listing with avatars.
+        """
+        resp = self.client.get('/api/v2/users')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+        data = json.loads(resp.data)
+        self.assertEqual(len(data), 2)
+        self.assertDictEqual(
+            data,
+            {
+                u'10': {
+                    u'avatar': u'https://intranet.stxnext.pl/api/images/users/'
+                               u'141',
+                    u'name': u'Adam P.'
+                },
+                u'11': {
+                    u'avatar': u'https://intranet.stxnext.pl/api/images/users/'
+                               u'176',
+                    u'name': u'Adrian K.'
+                }
+            }
+        )
+
+    # pylint: disable=invalid-name
+    def test_api_mean_time_weekday_user_with_no_data(self):
+        """
+        Test not existing user for mean_time_weekday.
+        """
+        resp = self.client.get('/api/v1/mean_time_weekday/100')
+        self.assertEqual(resp.status_code, 404)
+
+    # pylint: disable=invalid-name
+    def test_api_presence_start_end_user_with_no_data(self):
+        """
+        Test not existing user for presence_start_end.
+        """
+        resp = self.client.get('/api/v1/presence_start_end/100')
+        self.assertEqual(resp.status_code, 404)
+
+    # pylint: disable=invalid-name
+    def test_api_presence_weekday_user_with_no_data(self):
+        """
+        Test not existing user for presence_weekday.
+        """
+        resp = self.client.get('/api/v1/presence_weekday/100')
+        self.assertEqual(resp.status_code, 404)
+
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
     """
@@ -127,6 +181,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         Before each test, set up a environment.
         """
         main.app.config.update({'DATA_CSV': TEST_DATA_CSV})
+        main.app.config.update({'XML_FILE_PATH': TEST_USERS_XML})
 
     def tearDown(self):
         """
@@ -190,7 +245,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
 
     def test_interval(self):
         """
-        Test calculates inverval in seconds between two datetime.time objects.
+        Test calculates interval in seconds between two datetime.time objects.
         """
         start_date = datetime.datetime(2014, 11, 4, 15, 28, 28, 864311)
         end_date = datetime.datetime(2014, 11, 4, 15, 33, 47, 872419)
@@ -217,6 +272,26 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         """
         self.assertEqual(utils.seconds_to_hour(30927), (8, 35, 27))
         self.assertEqual(utils.seconds_to_hour(0), (0, 0, 0))
+
+    def test_get_data_v2(self):
+        """
+        Test user id dict with names and links to their avatars.
+        """
+        self.assertDictEqual(
+            utils.get_data_v2(),
+            {
+                u'10': {
+                    u'avatar': u'https://intranet.stxnext.pl/api/images/users/'
+                               u'141',
+                    u'name': u'Adam P.'
+                },
+                u'11': {
+                    u'avatar': u'https://intranet.stxnext.pl/api/images/users/'
+                               u'176',
+                    u'name': u'Adrian K.'
+                }
+            }
+        )
 
 
 def suite():

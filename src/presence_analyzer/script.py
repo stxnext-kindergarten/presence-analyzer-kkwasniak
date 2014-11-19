@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """Startup utilities"""
 # pylint:skip-file
-
 import os
 import sys
 from functools import partial
 
 import paste.script.command
+from urllib2 import urlopen
 import werkzeug.script
 
 etc = partial(os.path.join, 'parts', 'etc')
@@ -111,3 +111,9 @@ def run():
         _serve('stop', dry_run=dry_run)
 
     werkzeug.script.run()
+
+
+# bin/download_users
+def download_users():
+    with open('runtime/data/users.xml', 'wb') as f:
+        f.write(urlopen('http://sargo.bolt.stxnext.pl/users.xml').read())

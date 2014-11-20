@@ -6,6 +6,7 @@ import os.path
 import json
 import datetime
 import unittest
+from time import time
 
 # pylint: disable=unused-import, import-error
 from presence_analyzer import main, utils
@@ -291,6 +292,49 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
                     u'name': u'Adrian K.'
                 }
             }
+        )
+
+    def test_is_expired(self):
+        """
+        Test if given time is expired.
+        """
+        self.assertEquals(True, utils.is_expired(1, 1))
+        self.assertEquals(True, utils.is_expired(time(), -10))
+        self.assertEquals(False, utils.is_expired(time(), 600))
+        self.assertEquals(False, utils.is_expired(time(), 20.0))
+
+    def test_data_is_cached(self):
+        """
+        Test cache decorator.
+        """
+        utils.CACHE = {}
+        utils.get_data_v2()
+        self.assertNotEquals({}, utils.CACHE)
+        utils.CACHE['d5678d1d23ed69aff53bbb485fff35eb']['time'] = 1337.1337
+        utils.get_data_v2()
+        self.assertNotEquals(
+            utils.CACHE['d5678d1d23ed69aff53bbb485fff35eb']['time'],
+            1337.1337
+        )
+        utils.CACHE['d5678d1d23ed69aff53bbb485fff35eb']['data'] = 'test'
+        self.assertEquals(
+            utils.get_data_v2(),
+            'test'
+        )
+        utils.CACHE['d5678d1d23ed69aff53bbb485fff35eb']['time'] = 1
+        self.assertEquals(utils.get_data_v2(), {
+            '10': {
+                'avatar': 'https://intranet.stxnext.pl/api/images/users/141',
+                'name': 'Adam P.'
+            },
+            '11': {
+                'avatar': 'https://intranet.stxnext.pl/api/images/users/176',
+                'name': 'Adrian K.'
+            }
+        })
+        self.assertNotEquals(
+            utils.CACHE['d5678d1d23ed69aff53bbb485fff35eb']['data'],
+            'test'
         )
 
 

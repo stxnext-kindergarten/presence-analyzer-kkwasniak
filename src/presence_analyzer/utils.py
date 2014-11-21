@@ -9,6 +9,11 @@ from json import dumps
 from functools import wraps
 from datetime import datetime, timedelta
 from urlparse import urljoin
+from threading import Lock
+# pylint: disable=redefined-outer-name
+from time import time
+from cPickle import dumps as pickle_dumps
+from hashlib import md5
 
 from flask import Response
 from lxml import etree
@@ -18,6 +23,48 @@ from presence_analyzer.main import app
 
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
+LOCK = Lock()
+CACHE = {}
+
+
+def is_expired(last_time, cache_time):
+    """
+    Checks if given time is expired.
+    """
+    return last_time + cache_time < time()
+
+
+def cache(cache_time):
+    """
+    Decorator for memorize output from function for given time.
+    """
+    # pylint: disable=missing-docstring
+    def _wrapper(func):
+        @wraps(func)
+        def __wrapper(*args, **kwargs):
+            key = md5(
+                pickle_dumps((func.__name__, args, kwargs))
+            ).hexdigest()
+
+            if key in CACHE and not is_expired(CACHE[key]['time'], cache_time):
+                return CACHE[key]['data']
+
+            CACHE[key] = {'time': time(), 'data': func()}
+            return CACHE[key]['data']
+        return __wrapper
+    return _wrapper
+
+
+def locker(func):
+    """
+    Decorator prevents for using function at the same time.
+    """
+    # pylint: disable=missing-docstring
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with LOCK:
+            return func(*args, **kwargs)
+    return wrapper
 
 
 def jsonify(function):
@@ -75,6 +122,8 @@ def get_data():
     return data
 
 
+@locker
+@cache(600)
 def get_data_v2():
     """
     Return user id dict with names and links to their avatars.

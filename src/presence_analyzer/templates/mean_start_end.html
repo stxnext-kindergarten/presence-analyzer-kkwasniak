@@ -1,7 +1,7 @@
 <%inherit file="base.html"/>
 
 <%block name="content">
-    Presence start-end weekday
+    Mean start-end
 </%block>
 
 <%block name="script_area">
@@ -9,34 +9,31 @@
         get_users(
             "${ url_for('api_users_v2_view') }",
             function (loading, chart_div, selected_user) {
-                var url = "${ url_for('api_presence_start_end', user_id=1)[:-2] }/" + selected_user,
-                    result = [];
-                $.getJSON(url, function(entries) {
-                    entries.forEach(function(entry) {
-                        result.push(
-                            [
-                                entry[0],
-                                new Date(1, 1, 1, entry[1][0], entry[1][1], entry[1][2]),
-                                new Date(1, 1, 1, entry[2][0], entry[2][1], entry[2][2])
-                            ]
-                        )
-                    });
+                var url = "${ url_for('api_mean_start_end', user_id=1)[:-2] }/" + selected_user;
+                $.getJSON(url, function(entry) {
+                    var result = [
+                        [
+                            'All time',
+                            new Date(1, 1, 1, entry[0][0], entry[0][1], entry[0][2]),
+                            new Date(1, 1, 1, entry[1][0], entry[1][1], entry[1][2])
+                        ]
+                    ],
+                        formatter = new google.visualization.DateFormat({pattern: 'HH:mm:ss'}),
+                        options = {
+                            hAxis: {title: 'Weekday'}
+                        },
+                        chart = new google.visualization.Timeline(chart_div[0]),
+                        data = new google.visualization.DataTable();
 
                     chart_div.show();
                     loading.hide();
-                    var chart = new google.visualization.Timeline(chart_div[0]),
-                        options = {
-                            hAxis: {title: 'Weekday'}
-                    },
-                        formatter = new google.visualization.DateFormat({pattern: 'HH:mm:ss'}),
-                        data = new google.visualization.DataTable();
-
                     data.addColumn('string', 'Weekday');
                     data.addColumn({ type: 'datetime', id: 'Start' });
                     data.addColumn({ type: 'datetime', id: 'End' });
                     data.addRows(result);
                     formatter.format(data, 1);
                     formatter.format(data, 2);
+
                     chart.draw(data, options);
                 }).error(function() {
                     loading.hide();

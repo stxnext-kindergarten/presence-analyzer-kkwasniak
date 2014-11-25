@@ -140,3 +140,32 @@ def template_param(template):
         return render_template(template)
     except TopLevelLookupException:
         abort(404)
+
+
+@app.route('/api/v1/mean_start_end/<int:user_id>', methods=['GET'])
+@jsonify
+def api_mean_start_end(user_id):
+    """
+    Returns avg start and end time of the user.
+    """
+    data = get_data().get(user_id)
+    if data is None:
+        log.debug('User %s not found!', user_id)
+        abort(404)
+
+    result = {'start': [], 'end': []}
+
+    for val in data.itervalues():
+        result['start'].append(
+            seconds_since_midnight(val['start'])
+        )
+        result['end'].append(
+            seconds_since_midnight(val['end'])
+        )
+
+    result = [
+        seconds_to_hour(mean(result['start'])),
+        seconds_to_hour(mean(result['end']))
+    ]
+
+    return result

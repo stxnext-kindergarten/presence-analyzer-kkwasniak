@@ -171,6 +171,16 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         resp = self.client.get('/api/v1/presence_weekday/100')
         self.assertEqual(resp.status_code, 404)
 
+    def test_api_mean_start_end(self):
+        """
+        Test avg start and end time of the user.
+        """
+        resp = self.client.get('/api/v1/mean_start_end/10')
+        self.assertEquals(resp.status_code, 200)
+        self.assertListEqual(
+            json.loads(resp.data), [[9, 55, 54], [17, 10, 26]]
+        )
+
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
     """

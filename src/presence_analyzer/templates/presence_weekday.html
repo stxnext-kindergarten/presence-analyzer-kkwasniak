@@ -5,15 +5,15 @@
         get_users(
             "${ url_for('api_users_v2_view') }",
             function (loading, chart_div, selected_user) {
-                var result = [],
-                    url = "${ url_for('api_presence_weekday', user_id=1)[:-2] }/" + selected_user;
+                var url = "${ url_for('api_presence_weekday', user_id=1)[:-2] }/" + selected_user,
+                    result = [];
                 $.getJSON(url, function(result) {
                     var data = google.visualization.arrayToDataTable(result),
-                        options = {};
+                        options = {},
+                        chart = new google.visualization.PieChart(chart_div[0]);
 
                     chart_div.show();
                     loading.hide();
-                    var chart = new google.visualization.PieChart(chart_div[0]);
                     chart.draw(data, options);
                 }).error(function() {
                     loading.hide();

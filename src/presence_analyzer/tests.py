@@ -91,6 +91,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
                 [u'Sat', 0],
                 [u'Sun', 0]
             ]
+
         )
 
     def test_api_presence_start_end(self):
@@ -131,20 +132,22 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(resp.content_type, 'application/json')
         data = json.loads(resp.data)
         self.assertEqual(len(data), 2)
-        self.assertDictEqual(
+        self.assertEqual(
             data,
-            {
-                u'10': {
-                    u'avatar': u'https://intranet.stxnext.pl/api/images/users/'
-                               u'141',
+            [
+                {
+                    u'avatar': u'https://intranet.stxnext.pl/api/images/'
+                               u'users/141',
+                    u'id': u'10',
                     u'name': u'Adam P.'
                 },
-                u'11': {
-                    u'avatar': u'https://intranet.stxnext.pl/api/images/users/'
-                               u'176',
+                {
+                    u'avatar': u'https://intranet.stxnext.pl/api/images/'
+                               u'users/176',
+                    u'id': u'11',
                     u'name': u'Adrian K.'
                 }
-            }
+            ]
         )
 
     # pylint: disable=invalid-name
@@ -288,20 +291,22 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         """
         Test user id dict with names and links to their avatars.
         """
-        self.assertDictEqual(
+        self.assertEquals(
             utils.get_data_v2(),
-            {
-                u'10': {
-                    u'avatar': u'https://intranet.stxnext.pl/api/images/users/'
-                               u'141',
-                    u'name': u'Adam P.'
+            [
+                {
+                    'avatar': 'https://intranet.stxnext.pl/api/images/'
+                              'users/141',
+                    'id': '10',
+                    'name': 'Adam P.'
                 },
-                u'11': {
-                    u'avatar': u'https://intranet.stxnext.pl/api/images/users/'
-                               u'176',
-                    u'name': u'Adrian K.'
+                {
+                    'avatar': 'https://intranet.stxnext.pl/api/images/'
+                              'users/176',
+                    'id': '11',
+                    'name': 'Adrian K.'
                 }
-            }
+            ]
         )
 
     def test_is_expired(self):
@@ -332,16 +337,23 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
             'test'
         )
         utils.CACHE['d5678d1d23ed69aff53bbb485fff35eb']['time'] = 1
-        self.assertEquals(utils.get_data_v2(), {
-            '10': {
-                'avatar': 'https://intranet.stxnext.pl/api/images/users/141',
-                'name': 'Adam P.'
-            },
-            '11': {
-                'avatar': 'https://intranet.stxnext.pl/api/images/users/176',
-                'name': 'Adrian K.'
-            }
-        })
+        self.assertEquals(
+            utils.get_data_v2(),
+            [
+                {
+                    'avatar': 'https://intranet.stxnext.pl/api/'
+                              'images/users/141',
+                    'id': '10',
+                    'name': 'Adam P.'
+                },
+                {
+                    'avatar': 'https://intranet.stxnext.pl/api/'
+                              'images/users/176',
+                    'id': '11',
+                    'name': 'Adrian K.'
+                }
+            ]
+        )
         self.assertNotEquals(
             utils.CACHE['d5678d1d23ed69aff53bbb485fff35eb']['data'],
             'test'

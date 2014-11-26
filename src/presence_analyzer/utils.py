@@ -2,9 +2,9 @@
 """
 Helper functions used in views.
 """
-
 import csv
 import logging
+import locale
 from json import dumps
 from functools import wraps
 from datetime import datetime, timedelta
@@ -25,6 +25,7 @@ from presence_analyzer.main import app
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 LOCK = Lock()
 CACHE = {}
+locale.setlocale(locale.LC_COLLATE, 'pl_PL.UTF-8')
 
 
 def is_expired(last_time, cache_time):
@@ -135,12 +136,17 @@ def get_data_v2():
         xml.findtext('./server/protocol'), xml.findtext('./server/host')
     )
 
-    data = {}
+    data = []
     for user in xml.xpath('./users/user'):
-        data[user.get('id')] = {
-            'avatar': urljoin(api_server, user.findtext('avatar')),
-            'name': user.findtext('name')
-        }
+        data.append(
+            {
+                'id': user.get('id'),
+                'avatar': urljoin(api_server, user.findtext('avatar')),
+                'name': user.findtext('name')
+            }
+        )
+
+    data.sort(key=lambda x: x['name'], cmp=locale.strcoll)
 
     return data
 

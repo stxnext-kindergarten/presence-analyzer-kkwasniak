@@ -29,13 +29,12 @@ function get_users(users_view_url, onSelected) {
                     avatardiv.appendChild(img);
                 }
 
+                chart_div.hide();
+                $('#error-text').hide();
                 if (selected_user === '-1') {
-                    chart_div.hide();
                     $('#avatar').hide();
                 } else {
-                    $('#error-text').hide();
                     loading.show();
-                    chart_div.hide();
                     onSelected(loading, chart_div, selected_user);
                     $('#avatar').show();
                 }

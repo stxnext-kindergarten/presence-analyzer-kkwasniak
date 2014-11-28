@@ -29,11 +29,15 @@ function get_users(users_view_url, onSelected) {
                     avatardiv.appendChild(img);
                 }
 
-                if (selected_user) {
+                if (selected_user === '-1') {
+                    chart_div.hide();
+                    $('#avatar').hide();
+                } else {
                     $('#error-text').hide();
                     loading.show();
                     chart_div.hide();
                     onSelected(loading, chart_div, selected_user);
+                    $('#avatar').show();
                 }
             });
         });

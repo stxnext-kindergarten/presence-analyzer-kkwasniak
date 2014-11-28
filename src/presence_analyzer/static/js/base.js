@@ -7,8 +7,8 @@ function get_users(users_view_url, onSelected) {
             $.getJSON(users_view_url, function(result) {
                 var dropdown = $("#user_id");
                 $.each(result, function(item) {
-                    dropdown.append($("<option />").val(item).text(this.name));
-                    avatars[item] = this.avatar;
+                    dropdown.append($("<option />").val(this.id).text(this.name));
+                    avatars[this.id] = this.avatar;
                 });
                 dropdown.show();
                 loading.hide();
